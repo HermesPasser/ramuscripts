@@ -21,20 +21,26 @@ class MenuItem {
 }
 
 class Menu extends Drawable { // remove from drawable
+	// remove
 	upperLeftJoint = new Rect(0, 0, 6, 6)
 	horizontalLine = new Rect(6, 0, 53, 6)
 	verticalLine = new Rect(0, 6, 6, 53)
 	padding = 4
+	
 	columns = 3
 	lines = 2
 	cursor = 0
 	#menuItens = []
 	active = true
 	#packed = false
-	
+	onCloseFunc = null
 	start() {
 		this.canDraw = true
 	//	this.pack()
+	}
+	
+	get(id) {
+		return this.#menuItens[id]
 	}
 	
 	set(name) {
@@ -43,7 +49,8 @@ class Menu extends Drawable { // remove from drawable
 			console.warn("NoImplemented: this have not scroll so this ops will not be shown yet")
 		
 		const mi = new MenuItem()
-		mi.text = name	
+		mi.text = name
+		mi.parentMenu = this
 		mi.index = this.#menuItens.push(mi) - 1
 		return mi
 	}
@@ -191,6 +198,7 @@ class MenuParams {
 	upperLeftJoint = new Rect(0, 0, 6, 6)
 	horizontalLine = new Rect(6, 0, 53, 6)
 	verticalLine = new Rect(0, 6, 6, 53)
+	cornerSize = 6
 	padding = 4
 }
 
@@ -219,7 +227,7 @@ Ramu.init()
 Ramu.debugMode = true
 
 //new Menu(10, 10, 150, 50).pack(['fight', 'skill', 'item', 'run', 'ana', 'runer', 'dreamer'])
-var s = new Menu(25, 10, 150, 50)
+var s = new Menu(10, 10, 150, 50)
 s.set('fight')
 s.set('skill')
 s.set('item').active = false
@@ -227,3 +235,6 @@ s.set('run')
 s.set('runer')
 s.set('dreamer')
 s.pack()
+
+
+ 

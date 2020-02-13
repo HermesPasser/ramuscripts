@@ -9,8 +9,6 @@ Ramu.restoreAfter = function (func) {
 	Ramu.ctx.restore()
 }
 
-//let a = new Spritesheet(IMG, new Rect(0, 6, 53, 6), 1, 1, 53, 6)
-
 class MenuItem {
 	pos = null
 	screenPos = null
@@ -32,6 +30,7 @@ class Menu extends Drawable { // remove from drawable
 	cursor = 0
 	#menuItens = []
 	active = true
+	#packed = false
 	
 	start() {
 		this.canDraw = true
@@ -53,31 +52,26 @@ class Menu extends Drawable { // remove from drawable
 		if (this.#menuItens.length === 0)
 			return
 		
-		const size = 6
-		const initX = this.x + size
-		const initY = this.y + size
-		const windowWidth = this.width - size * 2
-		const windowHeight = this.height - size * 2
-		const itemW = windowWidth / this.columns
-		const itemH = windowHeight / this.lines
-		console.log('inity', initY, 'wh', windowHeight)
+		this.#packed = true
 		
-		for (let sY = initY, posY = 0, i = 0; sY < windowHeight; sY += itemH, posY++) {
-			for (let sX = initX, posX = 0; sX < windowWidth; sX += itemW, posX++, i++) {					
-				console.log(sY)			
-				console.log(i, this.#menuItens.length)
+		const size = 6
+		const windowInnerFrame = new Rect(
+			this.x + size, this.y + size,
+			this.width - size * 2, this.height - size * 2
+		)
+		const itemW = windowInnerFrame.width / this.columns
+		const itemH = windowInnerFrame.height / this.lines
+
+		for (let sY = windowInnerFrame.y, posY = 0, i = 0; sY < windowInnerFrame.y + windowInnerFrame.height; sY += itemH, posY++) {
+			for (let sX = windowInnerFrame.x, posX = 0; sX < windowInnerFrame.x + windowInnerFrame.width; sX += itemW, posX++, i++) {					
 				
-				if (i > this.#menuItens.length -1)
+				if (i > this.#menuItens.length - 1)
 					continue
 				
 				this.#menuItens[i].pos = new Rect(posX, posY, 0, 0)
-				this.#menuItens[i].screenPos = new Rect(sX, sY, itemW, itemH)
-				
-				if (i == 1) // to test inactiveness
-					this.#menuItens[i].active = false
+				this.#menuItens[i].screenPos = new Rect(sX, sY, itemW, itemH)	
 			}
 		}
-		// console.log("called", this.#menuItens)
 	}
 	
 	update() {
@@ -154,6 +148,9 @@ class Menu extends Drawable { // remove from drawable
 		
 		// draw menu & text
 		
+		if (!this.#packed) // do NOT draw even with itens availables since the position wasn't calculated yet
+			return// this.pack()
+		
 		let index = 0
 		for (let item of this.#menuItens) {
 			if (this.cursor == index) {
@@ -225,8 +222,8 @@ Ramu.debugMode = true
 var s = new Menu(25, 10, 150, 50)
 s.set('fight')
 s.set('skill')
-s.set('item')
+s.set('item').active = false
 s.set('run')
-// s.set('runer')
-// s.set('dreamer')
+s.set('runer')
+s.set('dreamer')
 s.pack()

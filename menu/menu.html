@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+	<head>
+		<title></title>
+	</head>
+	
+	<body>
+		<script type="text/javascript" src="../ramu-0.7c2.js"></script>
+		<script type="text/javascript">
+			"use strict"
+			
+			Ramu.restoreAfter = function (func) {
+				if (!Ramu.ctx)
+					return
+				Ramu.ctx.save()
+				func()
+				Ramu.ctx.restore()
+			}
+			
+		</script>
+		<script src="menuitem.js" type="text/javascript"></script>
+		<script src="menuparams.js" type="text/javascript"></script>
+		<script src="menu.js" type="text/javascript"></script>
+		<script src="menumgr.js" type="text/javascript"></script>
+		<script type="text/javascript">
+		
+Ramu.init()
+MenuParams.default.img = Ramu.Utils.getImage('skin.png')
+
+const mgr = new MenuManager()
+
+const m = new Menu(new Rect(10, 10, 250, 100), 2, 3) // size < 20 quebra (joga exceção)
+m.set('fight')
+m.set('skill')
+m.set('item').active = false
+m.set('submenu')
+m.set('runer')
+<!-- m.set('dreamer') -->
+m.pack()
+
+mgr.push(m)
+
+const subm = new Menu(new Rect(25, 25, 150, 50), 2, 3)
+subm.set('00')
+subm.set('voltar')
+subm.set('')
+subm.set('')
+subm.set('')
+subm.set('')
+subm.pack()
+
+subm.onCommandFunc = (item) => {
+	// chamando uma vez mesmo quando não cliquei
+	if (item.text == 'voltar') {
+		console.log(item.text)
+		subm.close()
+		
+	} else {
+		console.log(item.index)
+	}
+}
+
+m.onCommandFunc = (item) => {
+	console.log(item.text)	
+}
+
+m.setChildMenu('submenu', subm)
+		</script>
+	</body>
+</html> 

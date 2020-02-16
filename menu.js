@@ -16,12 +16,21 @@ class MenuItem {
 	text = ''
 	callback = null //?
 	parentMenu = null
-	childMenu = null
+	#childMenu = null
 	active = true
+	
+	set childMenu(menu) {
+		this.#childMenu = menu
+		this.#childMenu.manager = this.parentMenu.manager
+	}
+	
+	get childMenu() {
+		return this.#childMenu
+	}
 }
 
-class Menu extends Drawable { // remove from drawable
-	// remove
+class Menu extends GameObj{
+	// remove and use MenuParams
 	upperLeftJoint = new Rect(0, 0, 6, 6)
 	horizontalLine = new Rect(6, 0, 53, 6)
 	verticalLine = new Rect(0, 6, 6, 53)
@@ -31,12 +40,42 @@ class Menu extends Drawable { // remove from drawable
 	lines = 2
 	cursor = 0
 	#menuItens = []
-	active = true
+	active = false
 	#packed = false
 	onCloseFunc = null
-	start() {
-		this.canDraw = true
-	//	this.pack()
+	onOpenFunc = null
+	onCommandFunc = null
+	visible = false
+	
+	manager = null
+	
+	open() {
+		if(this.onOpenFunc)
+			this.onOpenFunc()
+		this.visible = true
+		this.active = true
+	}
+	
+	close() {
+		if(this.onCloseFunc)
+			this.onCloseFunc()
+		this.active = false
+		this.visible = false
+		
+		if (this.manager)
+			this.manager.pop()
+	}
+	
+	processCommand(item) {
+		if (item && item.childMenu) {
+			item.childMenu.open()
+			this.manager.push(item.childMenu)
+			this.active = false
+			
+		} else {
+			if (this.onCommandFunc)
+				this.onCommandFunc(item)
+		}
 	}
 	
 	get(id) {
@@ -80,45 +119,41 @@ class Menu extends Drawable { // remove from drawable
 			}
 		}
 	}
-	
-	update() {
-		// TODO: PREVENT change cursor position if no option is available in the position
-		if (Ramu.onKeyDown('d')) {
-			this.cursor = ++this.cursor 
-			
-			if (this.cursor > this.columns + this.lines)
-				this.cursor = 0
-		}
-		
-		if (Ramu.onKeyDown('a')) {
-			this.cursor = --this.cursor 
-			
-			if (this.cursor < 0)
-				this.cursor = this.columns + this.lines
-		}
-		
-		if (Ramu.onKeyDown('w')) {
-			this.cursor -= this.columns
-			if (this.cursor < 0)
-				this.cursor += this.columns
-		}
-		
-		if (Ramu.onKeyDown('s')) {
+
+	cursorUp() {
+		this.cursor -= this.columns
+		if (this.cursor < 0)
 			this.cursor += this.columns
-			if (this.cursor > this.columns + this.lines)
-				this.cursor -= this.columns
-		}
-		
-		if (Ramu.onKeyDown('q')) {
-			this.processCommand(this.#menuItens[this.cursor])
-		}
 	}
-	
-	processCommand(item) {
-		
+
+	cursorDown() {
+		this.cursor += this.columns
+		if (this.cursor > this.columns + this.lines)
+			this.cursor -= this.columns
 	}
-	
+
+	cursorLeft() {
+		this.cursor = --this.cursor 
+			
+		if (this.cursor < 0)
+			this.cursor = this.columns + this.lines
+	}
+
+	cursorRight() {
+		this.cursor = ++this.cursor 
+			
+		if (this.cursor > this.columns + this.lines)
+			this.cursor = 0
+	}
+
+	selectOption() {
+		this.processCommand(this.#menuItens[this.cursor])
+	}
+
 	draw() {
+		if (!this.visible) // remove this?
+			return
+
 		Ramu.ctx.imageSmoothingEnabled = false
 		if (Ramu.debugMode) {
 			Ramu.ctx.strokeStyle = 'green'
@@ -168,9 +203,9 @@ class Menu extends Drawable { // remove from drawable
 				Ramu.ctx.strokeStyle = '#2fadf5'
 			}
 			
-			// if (!item.active) {
-				// Ramu.ctx.strokeStyle = 'gray'
-			// }
+			if (!this.active) {
+				Ramu.ctx.fillStyle = 'blue'
+			}
 						
 			Ramu.ctx.fillRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
 			Ramu.ctx.strokeRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
@@ -187,6 +222,7 @@ class Menu extends Drawable { // remove from drawable
 			
 			if (this.cursor == index)
 				Ramu.ctx.fillStyle = '#2fadf5'
+			
 			Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w/2)
 			index++
 		}
@@ -203,38 +239,123 @@ class MenuParams {
 }
 
 class MenuManager extends Drawable {
-	root = null
+	#root = null
 	stack = []
 
 	constructor() {
-
+		super(1, 1, 1, 1)
+		this.canDraw = true
 	}
 
 	start() {
-		stack = [ this.root ]
+		this.stack = [ this.#root ]
+		this.root.open()
+	}
+	
+	push(menu) {
+		this.stack.push(menu)
+	}
+	
+	pop() {
+		this.stack.pop()
+		if (this.last) {
+			this.last.active = true
+		}
+	}
+	
+	get last() {
+		return this.stack[this.stack.length -1]
+	}
+	
+	set root (menu) {
+		this.#root = menu
+		menu.manager = this
+	}
+
+	get root() {
+		return this.#root
+	}
+
+	update() {
+		// TODO: add way to dinamically biding the keys
+		
+		const last = this.last
+		
+		if (!last)
+			return
+		
+		if (Ramu.onKeyDown('d')) {
+			last.cursorRight()
+		} 
+		
+		else if (Ramu.onKeyDown('a')) {
+			last.cursorLeft()
+		}
+		
+		else if (Ramu.onKeyDown('s')) {
+			last.cursorDown()
+		}
+		
+		else if (Ramu.onKeyDown('w')) {
+			last.cursorUp()
+		}
+		
+		else if (Ramu.onKeyDown('q')) { // Action button
+			last.selectOption()
+		}
+		
+		else if (Ramu.onKeyDown('e')) { // Cancel buttom
+			last.close()
+		}
 	}
 
 	draw() {
-
+		// TODO: draw sign of sub menu
 		for(let win of this.stack) {
-			win()
+			win.draw()
 		}
 
 	}
-
 }
 Ramu.init()
 Ramu.debugMode = true
 
-//new Menu(10, 10, 150, 50).pack(['fight', 'skill', 'item', 'run', 'ana', 'runer', 'dreamer'])
-var s = new Menu(10, 10, 150, 50)
-s.set('fight')
-s.set('skill')
-s.set('item').active = false
-s.set('run')
-s.set('runer')
-s.set('dreamer')
-s.pack()
+// the order matters when is adding a child menu, change it
 
+const mgr = new MenuManager()
 
- 
+const m = new Menu(10, 10, 150, 50)
+m.set('fight')
+m.set('skill')
+m.set('item').active = false
+const mitem = m.set('submenu')
+m.set('runer')
+m.set('dreamer')
+m.pack()
+
+mgr.root = m
+
+const subm = new Menu(25, 25, 150, 50)
+subm.set('00')
+const submitem = subm.set('voltar')
+subm.set('')
+subm.set('')
+subm.set('')
+subm.set('')
+subm.parentMenu = m // need this to childMenu() work
+subm.pack()
+
+subm.onCloseFunc = () => {
+	console.log('oi')
+}
+
+subm.onCommandFunc = (item) => {
+	// chamando uma vez mesmo quando não cliquei
+	if (item.id == submitem.id) {
+		console.log("oi")
+		subm.close()
+		
+	}
+}
+mitem.childMenu = subm
+

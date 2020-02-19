@@ -7,7 +7,7 @@ class MenuParams {
 	cursorRect = new Rect(32, 19, 9, 15)
 	cornerSize = 6
 	padding = 4
-
+	img = null
 	static default = new MenuParams()
 }
 
@@ -92,6 +92,8 @@ Ramu.init()
 Ramu.debugMode = true
 
 // the order matters when is adding a child menu, change it
+
+MenuParams.default.img = Ramu.Utils.getImage('skin.png')
 
 const mgr = new MenuManager()
 

@@ -124,6 +124,7 @@ class Menu extends GameObj{
 	}
 
 	drawWindow() {
+		const img = this.params.img
 		const vline = this.params.verticalLine
 		const hline = this.params.horizontalLine
 		const ulJoint = this.params.upperLeftJoint
@@ -133,33 +134,34 @@ class Menu extends GameObj{
 
 		// draw lines
 		
-		Ramu.ctx.drawImage(IMG, hline.x, hline.y, hline.width, hline.height, this.x + size, this.y, this.width - size * 2, size)
-		Ramu.ctx.drawImage(IMG, hline.x, hline.y, hline.width, hline.height, this.x + size, this.y + this.height - size, this.width - size * 2, size)
-		Ramu.ctx.drawImage(IMG, vline.x, vline.y, vline.width, hline.height, this.x, this.y + size, size, this.height - size * 2)
-		Ramu.ctx.drawImage(IMG, vline.x, vline.y, vline.width, hline.height, this.x + this.width - size, this.y + size, size, this.height - size * 2)
+		Ramu.ctx.drawImage(img, hline.x, hline.y, hline.width, hline.height, this.x + size, this.y, this.width - size * 2, size)
+		Ramu.ctx.drawImage(img, hline.x, hline.y, hline.width, hline.height, this.x + size, this.y + this.height - size, this.width - size * 2, size)
+		Ramu.ctx.drawImage(img, vline.x, vline.y, vline.width, hline.height, this.x, this.y + size, size, this.height - size * 2)
+		Ramu.ctx.drawImage(img, vline.x, vline.y, vline.width, hline.height, this.x + this.width - size, this.y + size, size, this.height - size * 2)
 	
 		// draw inner coners
 		
-		Ramu.ctx.drawImage(IMG, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, this.x, this.y, size, size)
+		Ramu.ctx.drawImage(img, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, this.x, this.y, size, size)
 		
 		Ramu.restoreAfter( () => {
 			Ramu.ctx.scale(-1, 1)
-			Ramu.ctx.drawImage(IMG, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, originXFlipped - this.width + size, this.y, size, size)
+			Ramu.ctx.drawImage(img, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, originXFlipped - this.width + size, this.y, size, size)
 		})
 		Ramu.restoreAfter( () => {
 			Ramu.ctx.scale(1, -1)
-			Ramu.ctx.drawImage(IMG, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, this.x, originYFlipped - this.height + size, size, size)
+			Ramu.ctx.drawImage(img, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, this.x, originYFlipped - this.height + size, size, size)
 		})
 		Ramu.restoreAfter( () => {
 			Ramu.ctx.scale(-1, -1)
-			Ramu.ctx.drawImage(IMG, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, originXFlipped - this.width + size, originYFlipped - this.height + size, size, size)
+			Ramu.ctx.drawImage(img, ulJoint.x, ulJoint.y, ulJoint.width, ulJoint.height, originXFlipped - this.width + size, originYFlipped - this.height + size, size, size)
 		})
 	}
 
 	drawSubmenuIcon(item) {
 		const cursor = this.params.cursorRect
 		if (item.childMenu)
-			Ramu.ctx.drawImage(IMG,
+			Ramu.ctx.drawImage(
+				this.params.img,
 				cursor.x, 
 				cursor.y, 
 				cursor.width, 

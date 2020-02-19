@@ -1,5 +1,5 @@
 "use strict"
-class Menu extends GameObj{
+class Menu extends Clickable {
 	// remove and use MenuParams
 	params = MenuParams.default
 	
@@ -201,7 +201,7 @@ class Menu extends GameObj{
 		Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w/2)
 	}
 
-	draw() {
+	draw() { // this class do not inherits from Drawable, this will be called in MenuManager
 		if (!this.visible) // remove this?
 			return
 
@@ -225,5 +225,31 @@ class Menu extends GameObj{
 		}
 		
 		this.drawWindow()
+	}
+
+	// --- Override members ---
+
+	update() {
+		if (this.active)
+			super.update()
+	}
+	
+	checkClick(){
+		if (Ramu.Utils.isEmpty(Ramu.clickedPosition))
+			return
+		
+		const rect = new Rect(Ramu.clickedPosition.X, Ramu.clickedPosition.Y, 1, 1)
+		for (let item of this.#menuItens) {
+			if (Ramu.Math.overlap(item.screenPos, rect))
+				this.selectOption()
+			
+		}
+	}
+	
+	checkHover(){
+		const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
+		for (let item of this.#menuItens)
+			if (Ramu.Math.overlap(item.screenPos, rect))
+				this.cursor = item.index	
 	}
 }

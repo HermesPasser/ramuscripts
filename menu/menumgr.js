@@ -121,9 +121,11 @@ subm.pack()
 subm.onCommandFunc = (item) => {
 	// chamando uma vez mesmo quando não cliquei
 	if (item.id == submitem.id) {
-		console.log("oi")
+		console.log(item.text)
 		subm.close()
 		
+	} else {
+		console.log(item.text)
 	}
 }
 mitem.childMenu = subm

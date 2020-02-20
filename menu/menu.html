@@ -31,7 +31,7 @@ const m = new Menu(10, 10, 250, 100) // size < 20 quebra (joga exceção)
 m.set('fight')
 m.set('skill')
 m.set('item').active = false
-const mitem = m.set('submenu')
+m.set('submenu')
 m.set('runer')
 m.set('dreamer')
 m.pack()
@@ -40,17 +40,16 @@ mgr.root = m
 
 const subm = new Menu(25, 25, 150, 50)
 subm.set('00')
-const submitem = subm.set('voltar')
+subm.set('voltar')
 subm.set('')
 subm.set('')
 subm.set('')
 subm.set('')
-subm.parentMenu = m // need this to childMenu() work
 subm.pack()
 
 subm.onCommandFunc = (item) => {
 	// chamando uma vez mesmo quando não cliquei
-	if (item.index == submitem.index) {
+	if (item.text == 'voltar') {
 		console.log(item.text)
 		subm.close()
 		
@@ -63,7 +62,7 @@ m.onCommandFunc = (item) => {
 	console.log(item.text)	
 }
 
-mitem.childMenu = subm
+m.setChildMenu('submenu', subm)
 		</script>
 	</body>
 </html> 

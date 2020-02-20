@@ -53,9 +53,7 @@ class MenuManager extends Drawable {
 	}
 	
 	setup() {
-		this.clickable = new Clickable(1,1,1,1)
-
-		this.clickable.checkClick = () => {
+		this.#clickable.checkClick = () => {
 			if (Ramu.Utils.isEmpty(Ramu.clickedPosition))
 				return
 			
@@ -67,7 +65,7 @@ class MenuManager extends Drawable {
 				
 			}
 		}
-		this.clickable.checkHover = () => {
+		this.#clickable.checkHover = () => {
 			const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
 			for (let item of this.last.itens) 
 				if (Ramu.Math.overlap(item.screenPos, rect))
@@ -86,6 +84,7 @@ class MenuManager extends Drawable {
 		// TODO: add way to dinamically biding the keys
 		const last = this.last
 		
+		// TODO: input parou de funfar
 		if (last !== void(0) && last.active)
 			return
 		

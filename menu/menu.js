@@ -6,7 +6,8 @@ class Menu extends Clickable {
 	columns = 3
 	lines = 2
 	cursor = 0
-	#menuItens = []
+	#menuItens = [] // use set(text, index) instead?
+	#childMenus = {}
 	active = false
 	#packed = false
 	onCloseFunc = null
@@ -20,6 +21,11 @@ class Menu extends Clickable {
 		super(x, y, w, h)
 		if (params)
 			this.params = params
+	}
+	
+	setChildMenu(triggerOption, menu) {
+		this.#childMenus[triggerOption] = menu
+		this.#childMenus[triggerOption].manager = this.manager
 	}
 	
 	get itens() {
@@ -47,9 +53,12 @@ class Menu extends Clickable {
 		if (!item.active)
 			return
 		
-		if (item && item.childMenu) {
-			item.childMenu.open()
-			this.manager.push(item.childMenu)
+		// if (item && item.childMenu) {
+		if (item && this.#childMenus[item.text]) {
+			// item.childMenu.open()
+			// this.manager.push(item.childMenu)
+			this.#childMenus[item.text].open()
+			this.manager.push(this.#childMenus[item.text])
 			this.active = false
 			
 		} else {

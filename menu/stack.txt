@@ -1,0 +1,14 @@
+
+
+MenuManager
+	Handles all the Ramu's routines (how menu will receive the input/mouse, draw the menus in worder) and controls the menus
+	
+MenuParams
+	Sets params about how the menu will be drawn
+	
+MenuItem
+	Contains all the necessary data about an item option and pointers to the parent menu and child menu
+	
+Menu
+	Represents the menu, contains all the mennu manipulation routines including ones to draw the menu components
+

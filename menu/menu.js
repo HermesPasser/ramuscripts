@@ -21,6 +21,10 @@ class Menu extends Clickable {
 		if (params)
 			this.params = params
 	}
+	
+	get itens() {
+		return this.#menuItens
+	}
 
 	open() {
 		if(this.onOpenFunc)
@@ -40,6 +44,9 @@ class Menu extends Clickable {
 	}
 	
 	processCommand(item) {
+		if (!item.active)
+			return
+		
 		if (item && item.childMenu) {
 			item.childMenu.open()
 			this.manager.push(item.childMenu)
@@ -224,32 +231,7 @@ class Menu extends Clickable {
 			index++
 		}
 		
-		this.drawWindow()
+		//this.drawWindow()
 	}
 
-	// --- Override members ---
-
-	update() {
-		if (this.active)
-			super.update()
-	}
-	
-	checkClick(){
-		if (Ramu.Utils.isEmpty(Ramu.clickedPosition))
-			return
-		
-		const rect = new Rect(Ramu.clickedPosition.X, Ramu.clickedPosition.Y, 1, 1)
-		for (let item of this.#menuItens) {
-			if (Ramu.Math.overlap(item.screenPos, rect))
-				this.selectOption()
-			
-		}
-	}
-	
-	checkHover(){
-		const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
-		for (let item of this.#menuItens)
-			if (Ramu.Math.overlap(item.screenPos, rect))
-				this.cursor = item.index	
-	}
 }

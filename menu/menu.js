@@ -1,26 +1,36 @@
 "use strict"
-class Menu extends Clickable {
-	// remove and use MenuParams
-	params = MenuParams.default
-	
-	columns = 3
+class Menu {
+	x = -1
+	y = -1
+	//TODO: test what happen if one or all is <= 0
+	width = -1
+	height = -1
 	lines = 2
+	columns = 3
+	
 	cursor = 0
+	
 	#menuItens = [] // use set(text, index) instead?
 	#childMenus = {}
-	active = false
 	#packed = false
-	onCloseFunc = null
-	onOpenFunc = null
-	onCommandFunc = null
+	active = false
 	visible = false
 	
+	onOpenFunc    = () => {}
+	onCloseFunc   = () => {}
+	onCommandFunc = () => {}
+	
+	params = MenuParams.default
 	manager = null
 
-	constructor(x, y, w, h, params = null) {
-		super(x, y, w, h)
-		if (params)
-			this.params = params
+	constructor(posSize, lines, columns, params = null) {
+		this.x = posSize.x
+		this.y = posSize.y
+		this.width = posSize.width
+		this.height = posSize.height
+		this.lines = lines
+		this.columns = columns
+		this.params = params || this.params
 	}
 	
 	setChildMenu(triggerOption, menu) {
@@ -33,15 +43,13 @@ class Menu extends Clickable {
 	}
 
 	open() {
-		if(this.onOpenFunc)
-			this.onOpenFunc()
+		this.onOpenFunc()
 		this.visible = true
 		this.active = true
 	}
 	
 	close() {
-		if(this.onCloseFunc)
-			this.onCloseFunc()
+		this.onCloseFunc()
 		this.active = false
 		this.visible = false
 		
@@ -49,21 +57,17 @@ class Menu extends Clickable {
 			this.manager.pop()
 	}
 	
-	processCommand(item) {
+	_processCommand(item) {
 		if (!item.active)
 			return
 		
-		// if (item && item.childMenu) {
 		if (item && this.#childMenus[item.text]) {
-			// item.childMenu.open()
-			// this.manager.push(item.childMenu)
 			this.#childMenus[item.text].open()
 			this.manager.push(this.#childMenus[item.text])
 			this.active = false
 			
 		} else {
-			if (this.onCommandFunc)
-				this.onCommandFunc(item)
+			this.onCommandFunc(item)
 		}
 	}
 	
@@ -136,10 +140,10 @@ class Menu extends Clickable {
 	}
 
 	selectOption() {
-		this.processCommand(this.#menuItens[this.cursor])
+		this._processCommand(this.#menuItens[this.cursor])
 	}
 
-	drawWindow() {
+	_drawWindow() {
 		const img = this.params.img
 		const vline = this.params.verticalLine
 		const hline = this.params.horizontalLine
@@ -173,9 +177,9 @@ class Menu extends Clickable {
 		})
 	}
 
-	drawSubmenuIcon(item) {
+	_drawSubmenuIcon(item) {
 		const cursor = this.params.cursorRect
-		if (item.childMenu)
+		if (this.#childMenus[item.text])
 			Ramu.ctx.drawImage(
 				this.params.img,
 				cursor.x, 
@@ -187,24 +191,24 @@ class Menu extends Clickable {
 				cursor.width, cursor.height)
 	}
 
-	drawItemWindow(item, index) {
-		if (this.cursor == index) {
-			Ramu.ctx.fillStyle = 'cyan'
-			Ramu.ctx.strokeStyle = 'white'
-		} else {
-			Ramu.ctx.fillStyle = '#86d1fc'
-			Ramu.ctx.strokeStyle = '#2fadf5'
-		}
+	_drawItemWindow(item, index) {
+		const winRect = this.active 
+						? this.cursor == index 
+							? this.params.normalBg 
+							: this.params.selectedBg
+						: this.params.inactiveBg
+
+		// if (Ramu.debugMode) {
+			// Ramu.ctx.strokeStyle = 'red'
+			Ramu.ctx.strokeRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
+		// }
 		
-		if (!this.active) {
-			Ramu.ctx.fillStyle = '#c2eff2'
-		}
-					
-		Ramu.ctx.fillRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
-		Ramu.ctx.strokeRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
+		Ramu.ctx.drawImage(this.params.img,
+			winRect.x, winRect.y, winRect.width, winRect.height,
+			item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
 	}
 
-	drawItemName(item, index) {
+	_drawItemName(item, index) {
 		Ramu.ctx.textBaseline = 'top'
 		Ramu.ctx.fillStyle = 'white'
 		const w = Ramu.ctx.measureText('M').width
@@ -232,15 +236,12 @@ class Menu extends Clickable {
 		
 		let index = 0
 		for (let item of this.#menuItens) {
-			this.drawItemWindow(item, index)
-
-			this.drawSubmenuIcon(item)		
-			this.drawItemName(item, index)
+			this._drawItemWindow(item, index)
+			this._drawSubmenuIcon(item)		
+			this._drawItemName(item, index)
 				
 			index++
 		}
-		
-		//this.drawWindow()
+		this._drawWindow()
 	}
-
 }

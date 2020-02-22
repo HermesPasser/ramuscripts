@@ -1,26 +1,14 @@
 "use strict"
 
-class MenuParams {	
-	upperLeftJoint = new Rect(0, 0, 6, 6)
-	horizontalLine = new Rect(6, 0, 53, 6)
-	verticalLine = new Rect(0, 6, 6, 53)
-	cursorRect = new Rect(32, 19, 9, 15)
-	cornerSize = 6
-	padding = 4
-	img = null
-	
-	static default = new MenuParams()
-}
-
 class MenuManager extends Drawable {
 	#root = null
+	#stack = []
 	#clickable = new Clickable(1,1,1,1)
-	stack = []
 
 	constructor() {
 		super(1, 1, 1, 1)
 		this.canDraw = true
-		this.setup()
+		this._setup()
 		// Ramu.canvas.oncontextmenu = () => {
 			// if (this.last)
 				// this.last.checkRightClick()
@@ -28,37 +16,18 @@ class MenuManager extends Drawable {
 		// }
 	}
 
-	push(menu) {
-		this.stack.push(menu)
-	}
-	
-	pop() {
-		this.stack.pop()
-		if (this.last) {
-			this.last.active = true
-		}
-	}
-	
 	get last() {
-		return this.stack[this.stack.length -1]
+		return this.#stack[this.#stack.length -1] || null
 	}
 	
-	set root (menu) {
-		this.#root = menu
-		menu.manager = this
-	}
-
-	get root() {
-		return this.#root
-	}
-	
-	setup() {
+	_setup() {
 		this.#clickable.checkClick = () => {
 			if (Ramu.Utils.isEmpty(Ramu.clickedPosition))
 				return
 			
 			// verify if one of the items is clicked
 			const rect = new Rect(Ramu.clickedPosition.X - 10, Ramu.clickedPosition.Y - 10, 1, 1)
+			if (this.last)
 			for (let item of this.last.itens) {
 				if (Ramu.Math.overlap(item.screenPos, rect))
 					this.last.selectOption()
@@ -67,25 +36,45 @@ class MenuManager extends Drawable {
 		}
 		this.#clickable.checkHover = () => {
 			const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
-			for (let item of this.last.itens) 
+			if (this.last)for (let item of this.last.itens) 
 				if (Ramu.Math.overlap(item.screenPos, rect))
 					this.last.cursor = item.index	
 		}	
 	}
 	
+	push(menu) {
+		if (this.#stack.length === 0) {
+			this.#root = menu
+			menu.manager = this
+		}
+		this.#stack.push(menu)
+	}
+	
+	pop() {
+		this.#stack.pop()
+		if (this.last) {
+			this.last.active = true
+		}
+	}
+	
+	reset() {
+		if (this.#root) {
+			this.push(this.#root)
+			this.#root.open()
+		}		
+	}
+	
 	// --- Override members ---
 	
 	start() {
-		this.stack = [ this.#root ]
-		this.root.open()
+		this.reset()
 	}
 	
 	update() {
 		// TODO: add way to dinamically biding the keys
 		const last = this.last
 		
-		// TODO: input parou de funfar
-		if (last !== void(0) && last.active)
+		if (last === null || !last.active)
 			return
 		
 		if (Ramu.onKeyDown('d')) {
@@ -114,9 +103,7 @@ class MenuManager extends Drawable {
 	}
 
 	draw() {
-		// TODO: draw sign of sub menu
-		for(let win of this.stack) 
+		for(let win of this.#stack) 
 			Ramu.restoreAfter( () => { win.draw() } )
 	}
 }
-

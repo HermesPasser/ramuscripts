@@ -29,14 +29,13 @@ MenuParams.default.img = Ramu.Utils.getImage('skin.png')
 
 const mgr = new MenuManager()
 
-const m = new Menu(new Rect(10, 10, 250, 100), 2, 
-) // size < 20 quebra (joga exceção)
+const m = new Menu(new Rect(10, 10, 250, 100), 2, 3) // size < 20 quebra (joga exceção)
 m.set('fight')
 m.set('skill')
 m.set('item').active = false
 m.set('submenu')
 m.set('runer')
-m.set('dreamer')
+<!-- m.set('dreamer') -->
 m.pack()
 
 mgr.push(m)

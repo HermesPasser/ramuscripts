@@ -5,8 +5,8 @@ class Menu {
 	//TODO: test what happen if one or all is <= 0
 	width = -1
 	height = -1
-	lines = 2
-	columns = 3
+	lines = -1
+	columns = -1
 	
 	cursor = 0
 	
@@ -93,7 +93,7 @@ class Menu {
 		
 		this.#packed = true
 		
-		const size = 6
+		const size = this.params.cornerSize
 		const windowInnerFrame = new Rect(
 			this.x + size, this.y + size,
 			this.width - size * 2, this.height - size * 2
@@ -120,19 +120,28 @@ class Menu {
 	}
 
 	cursorDown() {
+		// prevents from selecting an unexistent item
+		if (this.#menuItens[this.cursor + this.columns] === void(0))
+			return
+		
 		this.cursor += this.columns
 		if (this.cursor > this.columns + this.lines)
 			this.cursor -= this.columns
 	}
 
 	cursorLeft() {
+		
 		this.cursor = --this.cursor 
-			
+		
 		if (this.cursor < 0)
 			this.cursor = this.columns + this.lines
 	}
 
 	cursorRight() {
+		// prevents from selecting an unexistent item
+		if (this.#menuItens[this.cursor + 1] === void(0)) 
+			return
+		
 		this.cursor = ++this.cursor 
 			
 		if (this.cursor > this.columns + this.lines)

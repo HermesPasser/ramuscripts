@@ -27,18 +27,20 @@ class MenuManager extends Drawable {
 			
 			// verify if one of the items is clicked
 			const rect = new Rect(Ramu.clickedPosition.X - 10, Ramu.clickedPosition.Y - 10, 1, 1)
-			if (this.last)
-			for (let item of this.last.itens) {
-				if (Ramu.Math.overlap(item.screenPos, rect))
-					this.last.selectOption()
-				
+			if (this.last) {
+				for (let item of this.last.itens) {
+					if (Ramu.Math.overlap(item.screenPos, rect))
+						this.last.selectOption()
+				}
 			}
 		}
 		this.#clickable.checkHover = () => {
 			const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
-			if (this.last)for (let item of this.last.itens) 
-				if (Ramu.Math.overlap(item.screenPos, rect))
-					this.last.cursor = item.index	
+			if (this.last) {
+				for (let item of this.last.itens) 
+					if (Ramu.Math.overlap(item.screenPos, rect))
+						this.last.cursor = item.index	
+			}
 		}	
 	}
 	

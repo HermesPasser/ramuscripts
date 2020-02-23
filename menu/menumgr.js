@@ -21,27 +21,27 @@ class MenuManager extends Drawable {
 	}
 	
 	_setup() {
-		this.#clickable.checkClick = () => {
-			if (Ramu.Utils.isEmpty(Ramu.clickedPosition))
-				return
+		// this.#clickable.checkClick = () => {
+			// if (Ramu.Utils.isEmpty(Ramu.clickedPosition))
+				// return
 			
 			// verify if one of the items is clicked
-			const rect = new Rect(Ramu.clickedPosition.X - 10, Ramu.clickedPosition.Y - 10, 1, 1)
-			if (this.last) {
-				for (let item of this.last.itens) {
-					if (Ramu.Math.overlap(item.screenPos, rect))
-						this.last.selectOption()
-				}
-			}
-		}
-		this.#clickable.checkHover = () => {
-			const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
-			if (this.last) {
-				for (let item of this.last.itens) 
-					if (Ramu.Math.overlap(item.screenPos, rect))
-						this.last.cursor = item.index	
-			}
-		}	
+			// const rect = new Rect(Ramu.clickedPosition.X - 10, Ramu.clickedPosition.Y - 10, 1, 1)
+			// if (this.last) {
+				// for (let item of this.last.itens) {
+					// if (Ramu.Math.overlap(item.screenPos, rect))
+						// this.last.selectOption()
+				// }
+			// }
+		// }
+		// this.#clickable.checkHover = () => {
+			// const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
+			// if (this.last) {
+				// for (let item of this.last.itens) 
+					// if (Ramu.Math.overlap(item.screenPos, rect))
+						// this.last.cursor = item.index	
+			// }
+		// }	
 	}
 	
 	push(menu) {

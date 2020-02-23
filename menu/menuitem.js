@@ -5,7 +5,7 @@ class MenuItem {
 	screenPos = null
 	index = -1 
 	text = ''
-	callback = null //?
+	invalid = false
 	parentMenu = null
 	active = true
 }

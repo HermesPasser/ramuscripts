@@ -8,7 +8,13 @@ class Menu {
 	lines = -1
 	columns = -1
 	
-	cursor = 0
+	cursor = 5
+	
+	// testes
+	#fillItens = [] // ainda não usado de fato, serve para manter traço dos itens colocados p preencher espaço
+	firstItemToDrawn = 0
+	get fill () {return this.#fillItens}
+	
 	
 	#menuItens = [] // use set(text, index) instead?
 	#childMenus = {}
@@ -87,9 +93,13 @@ class Menu {
 		return mi
 	}
 
-	pack() {
+	pack(index = 0) {
 		if (this.#menuItens.length === 0)
 			return
+		
+		// checa se tem mais espaço que item
+		// if (this.#menuItens.length < this.lines * this.columns)
+			// console.log(this.#menuItens, this.lines * this.columns)
 		
 		this.#packed = true
 		
@@ -100,15 +110,25 @@ class Menu {
 		)
 		const itemW = windowInnerFrame.width / this.columns
 		const itemH = windowInnerFrame.height / this.lines
-
-		for (let sY = windowInnerFrame.y, posY = 0, i = 0; sY < windowInnerFrame.y + windowInnerFrame.height; sY += itemH, posY++) {
+		
+		this.#fillItens = [] // removing the fills from the last pack()
+		for (let sY = windowInnerFrame.y, posY = 0, i = index; sY < windowInnerFrame.y + windowInnerFrame.height; sY += itemH, posY++) {
 			for (let sX = windowInnerFrame.x, posX = 0; sX < windowInnerFrame.x + windowInnerFrame.width; sX += itemW, posX++, i++) {					
 				
-				if (i > this.#menuItens.length - 1)
-					continue
+				// quando entra aqui varias vezes vai criando vários intens,
+				// para impedir isso usar o segundo array com o num de valores imaginarios
+				// fillItens
+				let item = null
+				if (i > this.#menuItens.length - 1) {
+					let fillItem = new MenuItem()
+					fillItem.index = i
+					fillItem.invalid = true
+					this.#fillItens.push(fillItem)
+					item = fillItem
+				} else item = this.#menuItens[i]
 				
-				this.#menuItens[i].pos = new Rect(posX, posY, 0, 0)
-				this.#menuItens[i].screenPos = new Rect(sX, sY, itemW, itemH)	
+				item.pos = new Rect(posX, posY, 0, 0)
+				item.screenPos = new Rect(sX, sY, itemW, itemH)	
 			}
 		}
 	}
@@ -121,16 +141,15 @@ class Menu {
 
 	cursorDown() {
 		// prevents from selecting an unexistent item
-		if (this.#menuItens[this.cursor + this.columns] === void(0))
+		if (this.#menuItens[this.cursor + this.columns] === void(0) || this.#menuItens[this.cursor + this.columns].invalid)
 			return
-		
+				
 		this.cursor += this.columns
 		if (this.cursor > this.columns + this.lines)
 			this.cursor -= this.columns
 	}
 
 	cursorLeft() {
-		
 		this.cursor = --this.cursor 
 		
 		if (this.cursor < 0)
@@ -139,17 +158,52 @@ class Menu {
 
 	cursorRight() {
 		// prevents from selecting an unexistent item
-		if (this.#menuItens[this.cursor + 1] === void(0)) 
-			return
+		// const convenicence = this.#menuItens[this.cursor + 1]
+		const convenicence2 = this.#menuItens[this.cursor +this.firstItemToDrawn + 1]
+		// if (this.#menuItens[this.cursor +this.firstItemToDrawn+ 1] === void(0) || this.#menuItens[this.cursor+this.firstItemToDrawn + 1].invalid) 
+			// this.cursor = -1
 		
-		this.cursor = ++this.cursor 
-			
-		if (this.cursor > this.columns + this.lines)
+		// não da p resolver sem math
+		// já que eu preciso saber quando jogar  this.firstItemToDrawn para zero denovo
+		
+		++this.cursor 
+		if (this.#menuItens[this.cursor +this.firstItemToDrawn] === void(0) || this.#menuItens[this.cursor+this.firstItemToDrawn].invalid) {
+			console.log("o")
 			this.cursor = 0
+			this.firstItemToDrawn = 0
+			this.pack(0)
+		}		
+		if (this.cursor + this.firstItemToDrawn >= this.itens.length)
+				this.cursor = 0
+			
+		
+			
+		if (this.cursor > this.columns + this.lines) {
+			// This item is the last, go back to the first
+			// if (this.cursor >= this.itens.length)
+				// this.cursor = 0
+			// This item is not being drawn, tell the Menu to start to drawn from here on
+			// else 
+				if (this.itens.length > this.cursor) {
+				
+				if (this.#menuItens[this.cursor].invalid)
+				{
+					console.log('console')
+					this.firstItemToDrawn = 0
+					
+					this.pack(0)
+				} else {
+					this.firstItemToDrawn = this.cursor
+					this.pack(this.cursor)
+				}
+				this.cursor = 0
+			}
+		
+		}
 	}
 
 	selectOption() {
-		this._processCommand(this.#menuItens[this.cursor])
+		this._processCommand(this.#menuItens[this.cursor + this.firstItemToDrawn]) // + add the firstItemToDrawn?
 	}
 
 	_drawWindow() {
@@ -202,11 +256,11 @@ class Menu {
 
 	_drawItemWindow(item, index) {
 		const winRect = this.active 
-						? this.cursor == index 
+						? this.cursor + this.firstItemToDrawn == index 
 							? this.params.normalBg 
 							: this.params.selectedBg
 						: this.params.inactiveBg
-
+	
 		// if (Ramu.debugMode) {
 			// Ramu.ctx.strokeStyle = 'red'
 			Ramu.ctx.strokeRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
@@ -224,9 +278,8 @@ class Menu {
 
 		if (!item.active)
 			Ramu.ctx.fillStyle = 'gray'
-		else if (this.cursor == index)
+		else if (this.cursor + this.firstItemToDrawn == index)
 			Ramu.ctx.fillStyle = '#2fadf5'
-		
 		Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w/2)
 	}
 
@@ -243,14 +296,36 @@ class Menu {
 		if (!this.#packed) // do NOT draw even with itens availables since the position wasn't calculated yet
 			return
 		
-		let index = 0
-		for (let item of this.#menuItens) {
+		if (this.cursor > this.columns + this.lines && this.itens.length > this.cursor) {
+			let d
+		}
+		// Fill the item list with empty values if the number of actual items are lesser than the space available in the window
+		let itens //= this.#menuItens.length < this.lines * this.columns
+					 // ? this.#menuItens.slice(this.firstItemToDrawn).concat(this.#fillItens)
+					 // : this.#menuItens
+		if (this.#menuItens.length > this.lines * this.columns&& this.cursor + this.firstItemToDrawn > this.lines * this.columns) {
+			itens = this.#menuItens.slice(this.firstItemToDrawn).concat(this.#fillItens)
+		} else {
+			itens = this.#menuItens
+		}
+		// Get all the items stating in firstItemToDrawn and fill the the empty spaces
+		// if (this.#menuItens.length -1 > this.lines * this.columns)
+			// console.log("oi")
+		//itens = this.#menuItens.length -1 > this.lines * this.columns
+			//		 ? this.#menuItens.slice(this.firstItemToDrawn).concat(this.#fillItens)
+				//	 : itens
+		
+		let index = this.firstItemToDrawn
+		for (let item of itens) {
+			if (!item.screenPos)
+				continue // TODO gambs enquanto eu não desenho na tela
 			this._drawItemWindow(item, index)
 			this._drawSubmenuIcon(item)		
 			this._drawItemName(item, index)
 				
 			index++
 		}
+		
 		this._drawWindow()
 	}
 }

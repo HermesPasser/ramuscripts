@@ -186,7 +186,7 @@ class Menu {
 	}
 
 	_drawSubmenuIcon(item) {
-		const cursor = this.params.cursorRect
+		const cursor = this.active ? this.params.cursorRect : this.params.cursorRectInactive
 		if (this.#childMenus[item.text])
 			Ramu.ctx.drawImage(
 				this.params.img,
@@ -206,10 +206,10 @@ class Menu {
 							: this.params.selectedBg
 						: this.params.inactiveBg
 
-		// if (Ramu.debugMode) {
-			// Ramu.ctx.strokeStyle = 'red'
+		if (Ramu.debugMode) {
+			Ramu.ctx.strokeStyle = 'red'
 			Ramu.ctx.strokeRect(item.screenPos.x, item.screenPos.y, item.screenPos.width, item.screenPos.height)
-		// }
+		}
 		
 		Ramu.ctx.drawImage(this.params.img,
 			winRect.x, winRect.y, winRect.width, winRect.height,
@@ -226,7 +226,10 @@ class Menu {
 									: this.params.itemText	
 		
 		const w = Ramu.ctx.measureText('M').width		
-		Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w / 2)
+		Ramu.restoreAfter( () => {
+			Ramu.ctx.imageSmoothingEnabled = true
+			Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w / 2)
+		})
 	}
 
 	draw() {

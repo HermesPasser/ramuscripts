@@ -32,18 +32,18 @@ const text = new Ramu.Text("oi", 1, 150, 100, 30)
 const mgr = new MenuManager()
 
 const m = new Menu(new Rect(10, 10, 250, 100), 2, 3) // size < 20 quebra (joga exceção)
-m.set('fight')
-m.set('skill')
-m.set('item').active = false
+m.set('black')
+m.set('red')
+m.set('inactive').active = false
 m.set('submenu')
-m.set('runer')
-m.set('dreamer')
+m.set('blue')
+m.set('gray')
 m.pack()
 
 mgr.push(m)
 
 const subm = new Menu(new Rect(25, 25, 150, 50), 2, 3)
-subm.set('nada')
+subm.set('white')
 subm.set('voltar')
 subm.pack()
 
@@ -55,7 +55,9 @@ subm.onCommandFunc = (item) => {
 		
 	} else {
 		text.text = item.text + ' selecionado'
+		MenuParams.default.itemText = item.text
 	}
+
 }
 
 m.onCommandFunc = subm.onCommandFunc

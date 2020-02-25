@@ -14,5 +14,10 @@ class MenuParams {
 	padding = 4
 	img = null
 	
+	font = '13px sans-serif'
+	itemText = 'white'
+	inactiveItemText = 'gray'
+	selectedItemText = '#2fadf5'
+	
 	static default = new MenuParams()
 }

@@ -41,8 +41,7 @@ class Menu {
 	
 	get itens() {
 		return this.#menuItens
-	}
-	
+	}	
 
 	open() {
 		this.onOpenFunc()
@@ -220,19 +219,19 @@ class Menu {
 
 	_drawItemName(item, index) {
 		Ramu.ctx.textBaseline = 'top'
-		Ramu.ctx.fillStyle = 'white'
-		const w = Ramu.ctx.measureText('M').width
-
-		if (!item.active)
-			Ramu.ctx.fillStyle = 'gray'
-		else if (this.cursor == index)
-			Ramu.ctx.fillStyle = '#2fadf5'
+		Ramu.ctx.font = this.params.font
+		Ramu.ctx.fillStyle = !item.active
+								? this.params.inactiveItemText
+								: this.cursor == index
+									? this.params.selectedItemText
+									: this.params.itemText	
 		
-		Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w/2)
+		const w = Ramu.ctx.measureText('M').width		
+		Ramu.ctx.fillText(item.text, item.screenPos.x + w , item.screenPos.y + w / 2)
 	}
 
-	draw() { // this class do not inherits from Drawable, this will be called in MenuManager
-		if (!this.visible) // remove this?
+	draw() {
+		if (!this.visible)
 			return
 
 		Ramu.ctx.imageSmoothingEnabled = false

@@ -27,6 +27,8 @@
 Ramu.init()
 MenuParams.default.img = Ramu.Utils.getImage('skin.png')
 
+const text = new Ramu.Text("oi", 1, 150, 100, 30)
+
 const mgr = new MenuManager()
 
 const m = new Menu(new Rect(10, 10, 250, 100), 2, 3) // size < 20 quebra (joga exceção)
@@ -41,7 +43,7 @@ m.pack()
 mgr.push(m)
 
 const subm = new Menu(new Rect(25, 25, 150, 50), 2, 3)
-subm.set('00')
+subm.set('nada')
 subm.set('voltar')
 subm.pack()
 
@@ -52,15 +54,13 @@ subm.onCommandFunc = (item) => {
 		subm.close()
 		
 	} else {
-		console.log(item.index)
+		text.text = item.text + ' selecionado'
 	}
 }
 
-m.onCommandFunc = (item) => {
-	console.log(item.text)	
-}
-
+m.onCommandFunc = subm.onCommandFunc
 m.setChildMenu('submenu', subm)
+
 		</script>
 	</body>
 </html> 

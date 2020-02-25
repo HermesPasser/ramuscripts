@@ -11,6 +11,7 @@ class Menu {
 	cursor = 0
 	
 	#menuItens = [] // use set(text, index) instead?
+	#placeholderItens = []
 	#childMenus = {}
 	#packed = false
 	active = false
@@ -41,6 +42,7 @@ class Menu {
 	get itens() {
 		return this.#menuItens
 	}
+	
 
 	open() {
 		this.onOpenFunc()
@@ -103,12 +105,16 @@ class Menu {
 
 		for (let sY = windowInnerFrame.y, posY = 0, i = 0; sY < windowInnerFrame.y + windowInnerFrame.height; sY += itemH, posY++) {
 			for (let sX = windowInnerFrame.x, posX = 0; sX < windowInnerFrame.x + windowInnerFrame.width; sX += itemW, posX++, i++) {					
+				let item = null
+				if (i > this.#menuItens.length - 1) {
+					let fillItem = new MenuItem()
+					fillItem.index = i
+					this.#placeholderItens.push(fillItem)
+					item = fillItem
+				} else item = this.#menuItens[i]
 				
-				if (i > this.#menuItens.length - 1)
-					continue
-				
-				this.#menuItens[i].pos = new Rect(posX, posY, 0, 0)
-				this.#menuItens[i].screenPos = new Rect(sX, sY, itemW, itemH)	
+				item.pos = new Rect(posX, posY, 0, 0)
+				item.screenPos = new Rect(sX, sY, itemW, itemH)		
 			}
 		}
 	}
@@ -130,26 +136,21 @@ class Menu {
 	}
 
 	cursorLeft() {
-		
-		this.cursor = --this.cursor 
-		
-		if (this.cursor < 0)
-			this.cursor = this.columns + this.lines
+		if (--this.cursor < 0)
+			this.cursor = this.#menuItens.length - 1
 	}
 
 	cursorRight() {
-		// prevents from selecting an unexistent item
-		if (this.#menuItens[this.cursor + 1] === void(0)) 
-			return
-		
-		this.cursor = ++this.cursor 
+		++this.cursor
 			
-		if (this.cursor > this.columns + this.lines)
+		// prevents from selecting an unexistent item
+		if (this.cursor > this.columns + this.lines || this.#menuItens[this.cursor] === void (0))
 			this.cursor = 0
 	}
 
 	selectOption() {
-		this._processCommand(this.#menuItens[this.cursor])
+		if (this.#menuItens[this.cursor] !== null)
+			this._processCommand(this.#menuItens[this.cursor])
 	}
 
 	_drawWindow() {
@@ -243,8 +244,11 @@ class Menu {
 		if (!this.#packed) // do NOT draw even with itens availables since the position wasn't calculated yet
 			return
 		
+		// Fill the item list with empty values if the number of actual items are lesser than the space available in the window
+		let itens = this.#menuItens.slice().concat(this.#placeholderItens)
+		
 		let index = 0
-		for (let item of this.#menuItens) {
+		for (let item of itens) {
 			this._drawItemWindow(item, index)
 			this._drawSubmenuIcon(item)		
 			this._drawItemName(item, index)

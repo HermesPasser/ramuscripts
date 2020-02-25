@@ -35,7 +35,7 @@ m.set('skill')
 m.set('item').active = false
 m.set('submenu')
 m.set('runer')
-<!-- m.set('dreamer') -->
+m.set('dreamer')
 m.pack()
 
 mgr.push(m)
@@ -43,10 +43,6 @@ mgr.push(m)
 const subm = new Menu(new Rect(25, 25, 150, 50), 2, 3)
 subm.set('00')
 subm.set('voltar')
-subm.set('')
-subm.set('')
-subm.set('')
-subm.set('')
 subm.pack()
 
 subm.onCommandFunc = (item) => {

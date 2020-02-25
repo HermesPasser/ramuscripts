@@ -78,8 +78,7 @@ class Menu {
 	
 	set(name) {
 		if (this.#menuItens.length > this.columns * this.lines)
-			// TODO: se tiver scroll .pos e .screenPos deve ser re-calculado cada vez que dar scroll
-			console.warn("NoImplemented: this have not scroll so this ops will not be shown yet")
+			return
 		
 		const mi = new MenuItem()
 		mi.text = name

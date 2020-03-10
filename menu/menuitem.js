@@ -6,5 +6,9 @@ class MenuItem {
 	index = -1 
 	text = ''
 	parentMenu = null
-	active = true
+	active = false
+
+	constructor(name) {
+		this.text = name || this.text
+	}
 }

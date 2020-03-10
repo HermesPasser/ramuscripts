@@ -11,7 +11,7 @@ class Menu {
 	cursor = 0
 	
 	#menuItens = [] // use set(text, index) instead?
-	#placeholderItens = []
+	#activeItemCount = 0
 	#childMenus = {}
 	#packed = false
 	active = false
@@ -32,16 +32,27 @@ class Menu {
 		this.lines = lines
 		this.columns = columns
 		this.params = params || this.params
-	}
-	
-	setChildMenu(triggerOption, menu) {
-		this.#childMenus[triggerOption] = menu
-		this.#childMenus[triggerOption].manager = this.manager
+		this._setUp()
 	}
 	
 	get itens() {
 		return this.#menuItens
 	}	
+
+	get count() {
+		return this.columns * this.lines
+	}
+
+	selectItem(index) {
+		if (index >= 0 && index < this.#activeItemCount)
+			this.cursor = index
+	}
+
+	setChildMenu(triggerOption, menu) {
+		this.#childMenus[triggerOption] = menu
+		this.#childMenus[triggerOption].manager = this.manager
+	}
+	
 
 	open() {
 		this.onOpenFunc()
@@ -53,38 +64,40 @@ class Menu {
 		this.onCloseFunc()
 		this.active = false
 		this.visible = false
-		
+
 		if (this.manager)
 			this.manager.pop()
 	}
 	
-	_processCommand(item) {
-		if (!item.active)
-			return
-		
-		if (item && this.#childMenus[item.text]) {
-			this.#childMenus[item.text].open()
-			this.manager.push(this.#childMenus[item.text])
-			this.active = false
-			
-		} else {
-			this.onCommandFunc(item)
+	clear() {
+		this.cursor = 0
+		this.#activeItemCount = 0
+		for (let i = 0; i < this.count; i++) {
+			this.#menuItens[i].text = ''
+			this.#menuItens[i].active = false
 		}
 	}
-	
+
 	get(id) {
 		return this.#menuItens[id]
 	}
 	
-	set(name) {
-		if (this.#menuItens.length > this.columns * this.lines)
+	setAll(...opts) {
+		if (opts.length > this.columns * this.lines)
 			return
-		
-		const mi = new MenuItem()
-		mi.text = name
-		mi.parentMenu = this
-		mi.index = this.#menuItens.push(mi) - 1
-		return mi
+
+		for(let opt of opts)
+			this.set(opt)
+	}
+
+	set(name) {
+		const itens = this.#menuItens.filter( (item) => { return item.text === ''} )
+		if (itens.length === 0)
+			return
+		itens[0].text = name
+		itens[0].active = true
+		this.#activeItemCount++
+		return itens[0]
 	}
 
 	pack() {
@@ -103,16 +116,8 @@ class Menu {
 
 		for (let sY = windowInnerFrame.y, posY = 0, i = 0; sY < windowInnerFrame.y + windowInnerFrame.height; sY += itemH, posY++) {
 			for (let sX = windowInnerFrame.x, posX = 0; sX < windowInnerFrame.x + windowInnerFrame.width; sX += itemW, posX++, i++) {					
-				let item = null
-				if (i > this.#menuItens.length - 1) {
-					let fillItem = new MenuItem()
-					fillItem.index = i
-					this.#placeholderItens.push(fillItem)
-					item = fillItem
-				} else item = this.#menuItens[i]
-				
-				item.pos = new Rect(posX, posY, 0, 0)
-				item.screenPos = new Rect(sX, sY, itemW, itemH)		
+				this.#menuItens[i].pos = new Rect(posX, posY, 0, 0)
+				this.#menuItens[i].screenPos = new Rect(sX, sY, itemW, itemH)		
 			}
 		}
 	}
@@ -124,31 +129,54 @@ class Menu {
 	}
 
 	cursorDown() {
-		// prevents from selecting an unexistent item
-		if (this.#menuItens[this.cursor + this.columns] === void(0))
-			return
-		
 		this.cursor += this.columns
-		if (this.cursor > this.columns + this.lines)
+		if (this.cursor >= this.#activeItemCount)
 			this.cursor -= this.columns
 	}
 
 	cursorLeft() {
+		// prevents from jump to the last item position when the menu items are all empty
+		if (this.#activeItemCount === 0)
+			return
+
 		if (--this.cursor < 0)
-			this.cursor = this.#menuItens.length - 1
+			this.cursor = this.#activeItemCount - 1
 	}
 
 	cursorRight() {
 		++this.cursor
-			
-		// prevents from selecting an unexistent item
-		if (this.cursor > this.columns + this.lines || this.#menuItens[this.cursor] === void (0))
+		if (this.cursor > this.columns + this.lines || this.cursor >= this.#activeItemCount)
 			this.cursor = 0
 	}
 
 	selectOption() {
 		if (this.#menuItens[this.cursor] !== null)
 			this._processCommand(this.#menuItens[this.cursor])
+	}
+
+	draw() {
+		if (!this.visible)
+			return
+
+		Ramu.ctx.imageSmoothingEnabled = false
+		if (Ramu.debugMode) {
+			Ramu.ctx.strokeStyle = 'green'
+			Ramu.ctx.strokeRect(this.x, this.y, this.width, this.height)
+		}
+		
+		if (!this.#packed) // do NOT draw even with itens availables since the position wasn't calculated yet
+			return
+		
+		
+		let index = 0
+		for (let item of this.#menuItens) {
+			this._drawItemWindow(item, index)
+			this._drawSubmenuIcon(item)		
+			this._drawItemName(item, index)
+				
+			index++
+		}
+		this._drawWindow()
 	}
 
 	_drawWindow() {
@@ -232,30 +260,26 @@ class Menu {
 		})
 	}
 
-	draw() {
-		if (!this.visible)
+	_processCommand(item) {
+		if (!item.active)
 			return
+		
+		if (item && this.#childMenus[item.text]) {
+			this.#childMenus[item.text].open()
+			this.manager.push(this.#childMenus[item.text])
+			this.active = false
+			
+		} else {
+			this.onCommandFunc(item)
+		}
+	}
 
-		Ramu.ctx.imageSmoothingEnabled = false
-		if (Ramu.debugMode) {
-			Ramu.ctx.strokeStyle = 'green'
-			Ramu.ctx.strokeRect(this.x, this.y, this.width, this.height)
+	_setUp() {
+		for (let i = 0; i < this.count; i++) {
+			const mi = new MenuItem()
+			mi.parentMenu = this
+			mi.index = i 
+			this.#menuItens.push(mi)
 		}
-		
-		if (!this.#packed) // do NOT draw even with itens availables since the position wasn't calculated yet
-			return
-		
-		// Fill the item list with empty values if the number of actual items are lesser than the space available in the window
-		let itens = this.#menuItens.slice().concat(this.#placeholderItens)
-		
-		let index = 0
-		for (let item of itens) {
-			this._drawItemWindow(item, index)
-			this._drawSubmenuIcon(item)		
-			this._drawItemName(item, index)
-				
-			index++
-		}
-		this._drawWindow()
 	}
 }

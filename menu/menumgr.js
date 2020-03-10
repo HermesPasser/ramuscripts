@@ -30,7 +30,7 @@ class MenuManager extends Drawable {
 			if (this.last) {
 				for (let item of this.last.itens) {
 					if (Ramu.Math.overlap(item.screenPos, rect))
-						this.last.selectOption()
+					this.last.selectOption(item.index)
 				}
 			}
 		}
@@ -39,7 +39,7 @@ class MenuManager extends Drawable {
 			if (this.last) {
 				for (let item of this.last.itens) 
 					if (Ramu.Math.overlap(item.screenPos, rect))
-						this.last.cursor = item.index	
+						this.last.selectItem(item.index)
 			}
 		}	
 	}

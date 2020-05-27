@@ -4,6 +4,7 @@ class MenuManager extends Drawable {
 	#root = null
 	#stack = []
 	#clickable = new Clickable(1,1,1,1)
+	surpressDisableInput = false // if true the root menu will not be deactivated by the user input
 
 	constructor() {
 		super(1, 1, 1, 1)
@@ -30,18 +31,32 @@ class MenuManager extends Drawable {
 			if (this.last) {
 				for (let item of this.last.itens) {
 					if (Ramu.Math.overlap(item.screenPos, rect))
-					this.last.selectOption(item.index)
+						this.last.selectOption(item.index)
 				}
 			}
 		}
+		this._lastClicked = null
 		this.#clickable.checkHover = () => {
+			// TODO: for f's sake refactor this
+			
 			const rect = new Rect(Ramu.mousePosition.X, Ramu.mousePosition.Y, 1, 1)
 			if (this.last) {
-				for (let item of this.last.itens) 
-					if (Ramu.Math.overlap(item.screenPos, rect))
-						this.last.selectItem(item.index)
+				for (let item of this.last.itens){
+					if (Ramu.Math.overlap(item.screenPos, rect) && !this.#clickable.isInHover) {
+						if (this._lastClicked === item)
+							return
+							
+						this._lastClicked = item
+						this.#clickable.onHoverEnter(item);	
+						break
+					}
+				}
 			}
-		}	
+		}
+		this.#clickable.onHoverEnter = (item) => {
+			this.last.selectItem(item.index)
+			this.last.playChangeAudio()
+		}
 	}
 	
 	push(menu) {
@@ -53,8 +68,11 @@ class MenuManager extends Drawable {
 	}
 	
 	pop() {
+		//console.log(this.#stack, this.last)
 		this.#stack.pop()
+		//console.log(this.#stack, this.last)
 		if (this.last) {
+			// since the previous item on the stack would be inactive
 			this.last.active = true
 		}
 	}
@@ -73,10 +91,12 @@ class MenuManager extends Drawable {
 	}
 	
 	update() {
-		// TODO: add way to dinamically biding the keys
+		// TODO: add way to dinamically the bind of the keys
 		const last = this.last
 		
-		if (last === null || !last.active)
+		if (last === null || !last.active || !last.visible) 
+		// TODO: is never null or not active so util if refactor this the way this i add
+		// visible to the checks to prevent from executing when is supossed to be disabled
 			return
 		
 		if (Ramu.onKeyDown('d')) {
@@ -95,11 +115,12 @@ class MenuManager extends Drawable {
 			last.cursorUp()
 		}
 		
+		const canDisable = !this.surpressDisableInput || last !== this.#root
 		if (Ramu.onKeyDown('q')) { // Action button
 			last.selectOption()
 		}
-		
-		else if (Ramu.onKeyDown('e')) { // Cancel buttom
+				
+		else if (Ramu.onKeyDown('e') && canDisable) { // Cancel buttom
 			last.close()
 		}
 	}

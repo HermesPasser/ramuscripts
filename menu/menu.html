@@ -23,25 +23,39 @@
 		<script src="menu.js" type="text/javascript"></script>
 		<script src="menumgr.js" type="text/javascript"></script>
 		<script type="text/javascript">
-		
+
+// QUANOD CLICO EM VOLTAR ELE EXECUTA OK E BACK (ADD FORMA DE NÃO TOCAR AO APERTAR UM BOTAO)
+
 Ramu.init()
 MenuParams.default.img = Ramu.Utils.getImage('skin.png')
 
 const text = new Ramu.Text("oi", 1, 150, 100, 30)
 
 const mgr = new MenuManager()
-
+mgr.surpressDisableInput = true
 const m = new Menu(new Rect(10, 10, 250, 100), 2, 3) // size < 20 quebra (joga exceção)
 
 m.setAll('black', 'red', 'inactive', 'submenu', 'blue', 'yellow')
 m.get(2).active = false
 m.pack()
 
+let mp = MenuParams.default 
+mp.selectAudio  =  new Audio("https://hermespasser.github.io/ext/xp/001-System01.ogg")
+mp.unselectAudio = new Audio("https://hermespasser.github.io/ext/xp/008-System08.ogg")
+mp.changeAudio   = new Audio("https://hermespasser.github.io/ext/xp/002-System02.ogg")
+mp.invalidAudio  = new Audio("https://hermespasser.github.io/ext/xp/003-System03.ogg")
+
+mp.unselectAudio.load()
+mp.changeAudio.load()
+m.params = mp
+
 mgr.push(m)
 
 const subm = new Menu(new Rect(25, 25, 150, 50), 2, 3)
 subm.setAll('white', 'voltar')
 subm.pack()
+subm.get(1).playSoundOnSelect = false
+subm.params = mp
 
 subm.onCommandFunc = (item) => {
 	// chamando uma vez mesmo quando não cliquei
@@ -59,6 +73,10 @@ subm.onCommandFunc = (item) => {
 m.onCommandFunc = subm.onCommandFunc
 m.setChildMenu('submenu', subm)
 
+document.addEventListener("click", () => {
+	console.log("o", Ramu.clickedPosition)
+	//console.log('hover', mgr.click.isInHover) no working
+})
 		</script>
 	</body>
 </html> 

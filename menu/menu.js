@@ -16,7 +16,7 @@ class Menu {
 	#packed = false
 	active = false
 	visible = false
-	
+
 	onOpenFunc    = () => {}
 	onCloseFunc   = () => {}
 	onCommandFunc = () => {}
@@ -44,8 +44,8 @@ class Menu {
 	}
 
 	selectItem(index) {
-		if (index >= 0 && index < this.#activeItemCount)
-			this.cursor = index
+		if (index >= 0 && index < this.#activeItemCount) 
+			this.cursor = index		
 	}
 
 	setChildMenu(triggerOption, menu) {
@@ -64,6 +64,9 @@ class Menu {
 		this.onCloseFunc()
 		this.active = false
 		this.visible = false
+
+		if (this.params.unselectAudio !== null)
+			this.params.unselectAudio.play()
 
 		if (this.manager)
 			this.manager.pop()
@@ -123,12 +126,14 @@ class Menu {
 	}
 
 	cursorUp() {
+		this.playChangeAudio()
 		this.cursor -= this.columns
 		if (this.cursor < 0)
 			this.cursor += this.columns
 	}
 
 	cursorDown() {
+		this.playChangeAudio()
 		this.cursor += this.columns
 		if (this.cursor >= this.#activeItemCount)
 			this.cursor -= this.columns
@@ -139,11 +144,13 @@ class Menu {
 		if (this.#activeItemCount === 0)
 			return
 
+		this.playChangeAudio()
 		if (--this.cursor < 0)
 			this.cursor = this.#activeItemCount - 1
 	}
 
 	cursorRight() {
+		this.playChangeAudio()
 		++this.cursor
 		if (this.cursor > this.columns + this.lines || this.cursor >= this.#activeItemCount)
 			this.cursor = 0
@@ -152,6 +159,13 @@ class Menu {
 	selectOption() {
 		if (this.#menuItens[this.cursor] !== null)
 			this._processCommand(this.#menuItens[this.cursor])
+	}
+
+	playChangeAudio() {
+		if(this.params.changeAudio !== null) {
+			this.params.changeAudio.load()
+			this.params.changeAudio.play()//.catch((e) => {  })
+		}
 	}
 
 	draw() {
@@ -261,9 +275,15 @@ class Menu {
 	}
 
 	_processCommand(item) {
-		if (!item.active)
+		if (!item.active) {
+			if (this.params.invalidAudio !== null)
+				this.params.invalidAudio.play()
 			return
-		
+		}
+
+		if (this.params.selectAudio !== null && item.playSoundOnSelect)
+			this.params.selectAudio.play()
+
 		if (item && this.#childMenus[item.text]) {
 			this.#childMenus[item.text].open()
 			this.manager.push(this.#childMenus[item.text])

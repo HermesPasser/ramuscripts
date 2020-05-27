@@ -20,5 +20,10 @@ class MenuParams {
 	inactiveItemText = '#7CC1CE'
 	selectedItemText = '#0100FF'
 	
+	selectAudio = null
+	unselectAudio = null
+	changeAudio = null
+	invalidAudio = null
+
 	static default = new MenuParams()
 }
